@@ -1,0 +1,33 @@
+from setuptools import setup, find_packages
+
+setup(
+    name='tox-direct',
+    description='run commands in a tox testenv wiht the same as tox',
+    long_description="TODO",
+    author='Oliver Bestwalter',
+    author_email='oliver@bestwalter.de',
+    url='https://github.com/obestwalter/tox-direct',
+    license='MIT',
+    version='0.1.0',
+    package_dir={'': 'src'},
+    packages=find_packages('src'),
+    entry_points={'tox': ['direct = tox_direct.hookimpls']},
+    install_requires=['tox>=3.0'],
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Framework :: tox',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy',
+        'Topic :: Software Development :: Testing',
+    ],
+)
