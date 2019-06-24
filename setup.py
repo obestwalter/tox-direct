@@ -3,7 +3,8 @@ from setuptools import setup, find_packages
 setup(
     name='tox-direct',
     description='run commands in a tox testenv wiht the same as tox',
-    long_description="TODO",
+    long_description=open("README.md").read(),
+    long_description_content_type='text/markdown',
     author='Oliver Bestwalter',
     author_email='oliver@bestwalter.de',
     url='https://github.com/obestwalter/tox-direct',
