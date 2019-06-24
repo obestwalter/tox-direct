@@ -12,12 +12,19 @@ At the moment there are two ways to run tox envs in direct mode:
 1. if the testenv name contains the word "direct"
 2. if the environment variable `TOX_DIRECT` is set
 
+## installation
 
-minimal example:
+    pip install tox-direct
+
+## minimal example
 
 ```ini
 [tox]
 skipdist = True
+; you could add this to express that it's needed but if it is not installed
+; tox will create a venv and install it there and run everything from that
+; venv which somehow defeats the purpose a bit then :)
+;requires = tox-direct
 
 [testenv:direct-action]
 skip_install = True
@@ -31,22 +38,22 @@ commands = which python
 If I run these in a virtual environment (`.virtualenvs/tmp`) with `tox` and `tox-direct` installed:
 
 ```text
-$ TOX_DIRECT=1 tox -qre something-else
-
-We need direct action! No virtual environment! Ain't Nobody Got Time for That!
-/home/ob/.virtualenvs/tmp/bin/python
-_______________________________ summary _______________________________________
-  something-else: commands succeeded
-  congratulations :)
-```
-
-```text
 $ tox -qre direct-action  
 
 We need direct action! No virtual environment! Ain't Nobody Got Time for That!
 /home/ob/.virtualenvs/tmp/bin/python
 _______________________________ summary _______________________________________
   direct-action: commands succeeded
+  congratulations :)
+```
+
+```text
+$ TOX_DIRECT=1 tox -qre something-else
+
+We need direct action! No virtual environment! Ain't Nobody Got Time for That!
+/home/ob/.virtualenvs/tmp/bin/python
+_______________________________ summary _______________________________________
+  something-else: commands succeeded
   congratulations :)
 ```
 
