@@ -14,9 +14,9 @@ Having said that: life is messy and sometimes you just want to run a certain env
 
 ## concept
 
-`tox-direct` is trying to be safe first and should also have the ability to degrade gracefully, when `tox-direct` is not installed. To ensure this no new key in the init format is introduced.
+`tox-direct` is trying to be safe first and should also have the ability to degrade gracefully when `tox-direct` is not installed. To ensure this no new key in the init format is introduced.
 
-There are two ways to request envs in being run direct mode: **static** and **on request**. The on request variant also provides a **YOLO** option ((you only live once ;)) which means that everything is run in the host interpreter. This will change the host interpreter and is usually only safe and makes sense (or works at all) if tox is run in a virtual environment already.
+There are two ways to request envs being run direct mode: **static** and **on request**. The on request variant also provides a **YOLO** option ((you only live once ;)) which means that everything is run in the host interpreter. This will change the host interpreter and is usually only safe and makes sense (or works at all) if tox is run in a virtual environment already.
 
 ### static form 
 if the testenv name contains the word **direct** it will be run in direct mode if tox-direct is installed. If this is part of a project that is shared you should make sure that this also works as intended if `tox-direct` is not installed (a.k.a. degrades gracefully).
