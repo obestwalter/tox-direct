@@ -9,7 +9,7 @@ setup(
     author_email="oliver@bestwalter.de",
     url="https://github.com/obestwalter/tox-direct",
     license="MIT",
-    version="0.2.0",
+    version="0.2.1",
     package_dir={"": "src"},
     packages=find_packages("src"),
     entry_points={"tox": ["direct = tox_direct.hookimpls"]},
@@ -23,6 +23,7 @@ setup(
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
@@ -30,5 +31,5 @@ setup(
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Software Development :: Testing",
     ],
-    extras_require={"test": ["pytest"]},
+    extras_require={"test": ["pytest"], "publish": ["twine"]},
 )
