@@ -1,0 +1,8 @@
+include README.rst
+include LICENSE
+include setup.py
+include tox.ini
+graft tests
+
+global-exclude __pycache__
+global-exclude *.py[cod]
