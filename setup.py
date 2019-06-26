@@ -9,7 +9,7 @@ setup(
     author_email="oliver@bestwalter.de",
     url="https://github.com/obestwalter/tox-direct",
     license="MIT",
-    version="0.2.1",
+    version="0.2.2",
     package_dir={"": "src"},
     packages=find_packages("src"),
     entry_points={"tox": ["direct = tox_direct.hookimpls"]},
