@@ -16,6 +16,12 @@ Having said that: life is messy and sometimes you just want to run a certain env
 
 `tox-direct` is trying to be safe first and should also have the ability to degrade gracefully when `tox-direct` is not installed. To ensure this, no new key in `tox.ini` is introduced. It works purely over env name, command line parameters or environment variables.
 
+To be safe the following activities will be deactivated by default in direct runs:
+
+* package build
+* deps installations
+* project installation
+
 There are two ways to request envs being run direct mode: **static** and **on request**. The on request variant also provides a **YOLO** option ((you only live once ;)) which means that everything is run in the host interpreter. This will change the host interpreter and is usually only safe and makes sense (or works at all) if tox is run in a virtual environment already.
 
 ### static form 
