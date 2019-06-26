@@ -49,8 +49,6 @@ optional arguments:
 
 **WARNING: `tox-direct` does not consider different basepythons, which means that running environments with different basepythons makes no sense with `tox-direct` at the moment: they would all run in the same environment where tox is installed (effectively doing the same over and over again).**
 
-**NOTE: the YOLO option is called YOLO for a reason in case you run this as root in your system python :).**
-
 ## basic example
 
 Let's assume you are working in some virtualenv already which looks like this:
@@ -167,3 +165,5 @@ ______________________ summary _________________________________
 ```
 
 pytest and the project where installed in the host environment.
+
+**NOTE: the YOLO option is called YOLO for a reason in case you run this as root in your system python :).**
