@@ -63,22 +63,10 @@ $ pip list
 pip list
 Package            Version
 ------------------ -------
-filelock           3.0.12 
-importlib-metadata 0.18   
-packaging          19.0   
-pathlib2           2.3.4  
-pip                19.1.1 
-pluggy             0.12.0 
-py                 1.8.0  
-pyparsing          2.4.0  
-setuptools         41.0.1 
-six                1.12.0 
-toml               0.10.0 
+[...] 
 tox                3.13.1 
-tox-direct         0.2.0  
-virtualenv         16.6.1 
-wheel              0.33.4 
-zipp               0.5.1  
+tox-direct         0.2.2  
+[...]  
 
 
 $ tox --version
@@ -104,76 +92,78 @@ commands =
 
 [testenv:normal]
 whitelist_externals = which
-skip_install = True
+skip_install = False
+usedevelop = True
 commands = which python
 ```
 
-run tox with higher verbosity to see the info level messages from `tox-direct`:
+tun tox:
 
 ```text
-tox -vvre direct-action
-using tox.ini: ~/oss/tox-dev/tplay/tox.ini (pid 14280)
-  removing ~/oss/tox-dev/tplay/.tox/log
-[tox-direct] won't build a package
-[tox-direct] won't install dependencies in 'direct-action'
-[tox-direct] won't install project in direct-action
-using tox-3.13.1 from ~/.virtualenvs/tmp/lib/python3.6/site-packages/tox/__init__.py (pid 14280)
-skipping sdist step
-direct-action start: getenv ~/oss/tox-dev/tplay/.tox/direct-action
-direct-action cannot reuse: -r flag
-direct-action recreate: ~/oss/tox-dev/tplay/.tox/direct-action
-[tox-direct] creating no virtual environment - use: ~/.virtualenvs/tmp/bin/python3.6
-direct-action finish: getenv ~/oss/tox-dev/tplay/.tox/direct-action after 0.04 seconds
-direct-action start: finishvenv 
-~/.virtualenvs/tmp/bin/python3.6 (~/.virtualenvs/tmp/bin/python3.6) is {'executable': '~/.virtualenvs/tmp/bin/python3.6', 'name': 'python', 'version_info': [3, 6, 8, 'final', 0], 'version': '3.6.8 (default, Mar  8 2019, 10:42:28) \n[GCC 8.2.1 20181127]', 'is_64': True, 'sysplatform': 'linux'}
-direct-action uses ~/.virtualenvs/tmp/bin/python3.6
-write config to ~/oss/tox-dev/tplay/.tox/direct-action/.tox-config1 as 'daa272de3ecab6aebf1f8351873eca5d ~/.virtualenvs/tmp/bin/python3.6\n3.13.1 0 0 0'
-direct-action finish: finishvenv  after 0.08 seconds
-direct-action start: envreport 
-setting PATH=~/.virtualenvs/tmp/bin:~/.virtualenvs/tmp/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:~/bin:~/.screenlayout:~/.i3/bin:~/.gem/ruby/2.6.0/bin
-[14287] ~/oss/tox-dev/tplay$ ~/.virtualenvs/tmp/bin/python -m pip freeze >.tox/direct-action/log/direct-action-37.log
-direct-action finish: envreport  after 0.59 seconds
-direct-action installed: filelock==3.0.12,importlib-metadata==0.18,packaging==19.0,pathlib2==2.3.4,pluggy==0.12.0,py==1.8.0,pyparsing==2.4.0,six==1.12.0,test==0.1.0.dev0,toml==0.10.0,tox==3.13.1,tox-direct==0.2.0,virtualenv==16.6.1,zipp==0.5.1
-  removing ~/oss/tox-dev/tplay/.tox/direct-action/tmp
-direct-action start: run-test-pre 
-direct-action run-test-pre: PYTHONHASHSEED='2631343310'
-direct-action finish: run-test-pre  after 0.00 seconds
-direct-action start: run-test 
-direct-action run-test: commands[0] | pip list
-setting PATH=~/.virtualenvs/tmp/bin:~/.virtualenvs/tmp/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:~/bin:~/.screenlayout:~/.i3/bin:~/.gem/ruby/2.6.0/bin
-[14292] ~/oss/tox-dev/tplay$ ~/.virtualenvs/tmp/bin/pip list
+$ tox -qr
 Package            Version
 ------------------ -------
-filelock           3.0.12 
-importlib-metadata 0.18   
-packaging          19.0   
-pathlib2           2.3.4  
-pip                19.1.1 
-pluggy             0.12.0 
-py                 1.8.0  
-pyparsing          2.4.0  
-setuptools         41.0.1 
-six                1.12.0 
-toml               0.10.0 
+[...] 
 tox                3.13.1 
-tox-direct         0.2.0  
-virtualenv         16.6.1 
-wheel              0.33.4 
-zipp               0.5.1  
-direct-action run-test: commands[1] | which python
-setting PATH=~/.virtualenvs/tmp/bin:~/.virtualenvs/tmp/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:~/bin:~/.screenlayout:~/.i3/bin:~/.gem/ruby/2.6.0/bin
-[14297] ~/oss/tox-dev/tplay$ /usr/bin/which python
-~/.virtualenvs/tmp/bin/python
-direct-action finish: run-test  after 0.59 seconds
-direct-action start: run-test-post 
-direct-action finish: run-test-post  after 0.00 seconds
-_____________________________ summary _______________________________________
+tox-direct         0.2.2  
+[...]  
+/home/ob/.virtualenvs/tmp/bin/python
+Package            Version
+------------------ -------
+[...]
+pytest             4.6.3
+example-project    1.3
+[...]
+/home/ob/oss/tox-dev/tplay/.tox/normal/bin/python
+_________________ summary _______________________
   direct-action: commands succeeded
+  normal: commands succeeded
   congratulations :)
 ```
 
+The `direct-action` env shows the packages from the `tmp` virtual env and pytest was not installed, the project itself was also not installed.
+
+**WARNING: if something is installed in the commands (e.g. contains `pip install` calls) this will still happen as commands will be executed without further inspection.**
+ 
 tox still creates an envdir at `.tox/direct-action` but it does not contain a virutal environment - it is only used for internal bookkeeping and logging. The interpreter used throughout is `~/.virtualenvs/tmp` - the host interpreter that tox was started from.
 
-In simple direct mode (no yolo) nothing will be build, deps and project won't be installed.
+The `normal` env ran in the isolated environment provided by tox. pytest was installed and so was the project itself (because no package is needed to install the project in development mode). If usedevelop was set to `False` tox would crash with a note that you can't do this in direct mode (because sdist is not built in direct mode). 
 
-**WARNING: if something is installed in the commands this will still happen as commands will be executed without further inspection.** 
+run the normal environment in direct mode:
+
+```text
+tox -qre normal --direct
+Package            Version Location                           
+------------------ ------- --------
+[...]  
+tox                3.13.1  
+tox-direct         0.2.2 
+[...]   
+/home/ob/.virtualenvs/tmp/bin/python
+____________________ summary _______
+  normal: commands succeeded
+  congratulations :)
+```
+
+Thi time it ran in the host and nothing extra was installed.
+
+And now the YOLO version:
+
+```text
+tox -qre normal --direct-yolo
+Package            Version    Location                           
+------------------ ---------- --------
+[...]   
+example-project    1.3   
+pytest             4.6.3      
+[...]     
+tox                3.13.1     
+tox-direct         0.2.2
+[...]      
+/home/ob/.virtualenvs/tmp/bin/python
+______________________ summary _________________________________
+  normal: commands succeeded
+  congratulations :)
+```
+
+pytest and the project where installed in the host environment.

@@ -5,6 +5,7 @@ import sys
 import py
 import tox
 from tox.session import reporter
+from tox.exception import Error
 
 
 class DIRECT:
@@ -12,7 +13,6 @@ class DIRECT:
     ENV_VAR = "TOX_DIRECT"
     ENV_VAR_YOLO = "TOX_DIRECT_YOLO"
     SKIPSDIST_ORIGINAL = "_TOX_DIRECT_SKIPSDIST_ORIGINAL"
-    SKIP_INSTALL_ORIGINAL = "_TOX_DIRECT_SKIP_INSTALL_ORIGINAL"
 
 
 @tox.hookimpl
@@ -72,19 +72,19 @@ def tox_testenv_create(venv):
     isDirectCall = is_direct_call(venv.envconfig.config)
     isDirectVenv = is_direct_env(venv.name)
     YOLO = venv.envconfig.config.option.direct_yolo
-    if isDirectCall and not isDirectVenv and not YOLO:
+    if not isDirectVenv and not YOLO:
         # direct run only safe for "normal" env if package not used in testenv
         needsPackage = (
-            not getattr(venv.envconfig, DIRECT.SKIP_INSTALL_ORIGINAL)
+            not venv.envconfig.skip_install
             and not venv.envconfig.usedevelop
         )
-        if needsPackage and getattr(venv.envconfig.config, DIRECT.SKIPSDIST_ORIGINAL):
-            # TODO might be a bit brutal ... is there a more toxy way to do this?
-            sys.exit(
-                "[tox-direct] FATAL: tox env {} needs a package.\n"
-                "To run everything in the host (including package build), please call "
-                "with --direct-yolo to enable this.\n"
-                "This will change the host environment.".format(venv.name)
+        if needsPackage and not getattr(venv.envconfig.config, DIRECT.SKIPSDIST_ORIGINAL):
+            raise NormalEnvNeedsPackage(
+                "[tox-direct] FATAL: tox env '{}' needs a package.\n"
+                "Do not run this env as part of a direct run or "
+                "run everything in the host (including package build) by running "
+                "with --direct-yolo flag.\n"
+                "WARNING: this will change the host environment.".format(venv.name)
             )
 
     if isDirectCall or isDirectVenv:
@@ -112,3 +112,7 @@ def has_direct_envs(envlist):
 
 def is_direct_env(name):
     return DIRECT.MARKER in name
+
+
+class NormalEnvNeedsPackage(Error):
+    """Raised when a direct run contains a normal env needing a package."""
