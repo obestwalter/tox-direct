@@ -22,7 +22,7 @@ To be safe the following activities will be deactivated by default in direct run
 * deps installations
 * project installation
 
-There are two ways to request envs being run direct mode: **static** and **on request**. The on request variant also provides a **YOLO** option ((you only live once ;)) which means that everything is run in the host interpreter. This will change the host interpreter and is usually only safe and makes sense (or works at all) if tox is run in a virtual environment already.
+There are two ways to request envs being run in direct mode: **static** and **on request**. The on request variant also provides a **YOLO** option ((you only live once ;)) which means that everything is run in the host interpreter. This will change the host interpreter and is usually only safe and makes sense (or works at all) if tox is run in a virtual environment already.
 
 ### static form 
 if the testenv name contains the word **direct** it will be run in direct mode if tox-direct is installed. If this is part of a project that is shared you should make sure that this also works as intended if `tox-direct` is not installed (a.k.a. degrades gracefully).
