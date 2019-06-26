@@ -70,7 +70,7 @@ tox-direct         0.2.2
 $ tox --version
 3.13.1 imported from ~/.virtualenvs/tmp/lib/python3.6/site-packages/tox/__init__.py
 registered plugins:
-    tox-direct-0.2.0 at ~/.virtualenvs/tmp/lib/python3.6/site-packages/tox_direct/hookimpls.py
+    tox-direct-0.2.2 at ~/.virtualenvs/tmp/lib/python3.6/site-packages/tox_direct/hookimpls.py
 ```
 
 You have a project with a `tox.ini` like this:
