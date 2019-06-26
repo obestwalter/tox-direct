@@ -2,7 +2,7 @@
 
 [tox](https://tox.readthedocs.io) plugin: run tox envs directly in the same interpreter that tox was run in.
 
-`tox-direct` is something that you usually shouldn't need, but that can be handy in certain situations. It is not recommended to use this approach as a normal part of a tox based automation workflow. The fact that tox creates isolated virtual environments for all automation activities is one of the main reasons for its reliability and is the key to unify command line based an CI automation. 
+`tox-direct` is something that you usually shouldn't need, but that can be handy in certain situations. It is not recommended to use this approach as a normal part of a tox based automation workflow. The fact that tox creates isolated virtual environments for all automation activities is one of the main reasons for its reliability and is the key to unify command line based and CI automation. 
 
 Having said that: life is messy and sometimes you just want to run a certain environment in the host interpreter. For this there is `tox-direct` now.
 
