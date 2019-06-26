@@ -13,6 +13,7 @@ class DIRECT:
     ENV_VAR = "TOX_DIRECT"
     ENV_VAR_YOLO = "TOX_DIRECT_YOLO"
     SKIPSDIST_ORIGINAL = "_TOX_DIRECT_SKIPSDIST_ORIGINAL"
+    PYTHON = py.path.local(sys.executable)
 
 
 @tox.hookimpl
@@ -51,10 +52,9 @@ def tox_configure(config):
             if not is_direct_call(config) and not is_direct_env(name):
                 continue
             # TODO this could also be basepython on request (needed?)
-            directPython = py.path.local(sys.executable)
-            envconfig.get_envbindir = lambda: py.path.local(directPython.dirname)
-            envconfig.get_envpython = lambda: py.path.local(directPython)
-            assert envconfig.envpython == directPython, envconfig.envpython
+            envconfig.get_envbindir = lambda: py.path.local(DIRECT.PYTHON.dirname)
+            envconfig.get_envpython = lambda: py.path.local(DIRECT.PYTHON)
+            assert envconfig.envpython == DIRECT.PYTHON, envconfig.envpython
             if envconfig.deps and not YOLO:
                 reporter.info(
                     "[tox-direct] won't install dependencies in '{}'".format(name)
