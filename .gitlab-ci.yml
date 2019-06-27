@@ -1,0 +1,5 @@
+test-with-tox:
+  image: python:3.6
+  script:
+    - pip install tox
+    - tox
