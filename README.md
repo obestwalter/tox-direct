@@ -22,6 +22,8 @@ To be safe the following activities will be deactivated by default in direct run
 * deps installations
 * project installation
 
+**WARNING: be aware though that the commands are run as is. If you install things in commands they will be installed in the host environment.**
+
 There are two ways to request envs being run in direct mode: **static** and **on request**. The on request variant also provides a **YOLO** option ((you only live once ;)) which means that everything is run in the host interpreter. This will change the host interpreter and is usually only safe and makes sense (or works at all) if tox is run in a virtual environment already.
 
 ### static form 
