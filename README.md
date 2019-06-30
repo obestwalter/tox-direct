@@ -1,3 +1,5 @@
+[![GitLabl Build Status](https://gitlab.com/obestwalter/tox-direct/badges/master/build.svg)](https://gitlab.com/obestwalter/tox-direct/commits/master)
+
 # tox-direct
 
 [tox](https://tox.readthedocs.io) plugin: run tox envs directly in the same interpreter that tox was run in.
