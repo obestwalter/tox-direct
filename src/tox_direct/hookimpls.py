@@ -70,9 +70,9 @@ def tox_testenv_create(venv):
     if not is_direct_run(venv.envconfig.config):
         return  # normal behaviour
     isDirectCall = is_direct_call(venv.envconfig.config)
-    isDirectVenv = is_direct_env(venv.name)
+    isDirectEnv = is_direct_env(venv.name)
     YOLO = venv.envconfig.config.option.direct_yolo
-    if not isDirectVenv and not YOLO:
+    if not isDirectEnv and not YOLO:
         # direct run only safe for "normal" env if package not used in testenv
         needsPackage = (
             not venv.envconfig.skip_install
@@ -87,7 +87,7 @@ def tox_testenv_create(venv):
                 "WARNING: this will change the host environment.".format(venv.name)
             )
 
-    if isDirectCall or isDirectVenv:
+    if isDirectCall or isDirectEnv:
         venv.is_allowed_external = lambda _: True  # everything goes!
         reporter.info(
             "[tox-direct] creating no virtual environment - use:"
