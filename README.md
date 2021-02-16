@@ -4,7 +4,7 @@
 
 [tox](https://tox.readthedocs.io) plugin: run tox envs directly in the same interpreter that tox was run in.
 
-`tox-direct` is something that you usually shouldn't need, but that can be handy in certain situations. It is not recommended to use this approach as a normal part of a tox based automation workflow. The fact that tox creates isolated virtual environments for all automation activities is one of the main reasons for its reliability and is the key to unify command line based and CI automation. 
+`tox-direct` is something that you usually shouldn't need, but that can be handy in certain situations. It is not recommended to use this approach as a normal part of a tox based automation workflow. The fact that tox creates isolated virtual environments for all automation activities is one of the main reasons for its reliability and is the key to unify command line based and CI automation.
 
 Having said that: life is messy and sometimes you just want to run a certain environment in the host interpreter. For this there is `tox-direct` now.
 
@@ -20,18 +20,19 @@ Having said that: life is messy and sometimes you just want to run a certain env
 
 To be safe the following activities will be deactivated by default in direct runs:
 
-* package build
-* deps installations
-* project installation
+- package build
+- deps installations
+- project installation
 
 **WARNING: be aware though that the commands are run as is. If you install things in commands they will be installed in the host environment.**
 
 There are two ways to request envs being run in direct mode: **static** and **on request**. The on request variant also provides a **YOLO** option ((you only live once ;)) which means that everything is run in the host interpreter. This will change the host interpreter and is usually only safe and makes sense (or works at all) if tox is run in a virtual environment already.
 
-### static form 
-if the testenv name contains the word **direct** it will be run in direct mode if tox-direct is installed. If this is part of a project that is shared you should make sure that this also works as intended if `tox-direct` is not installed (a.k.a. degrades gracefully).
+### static form
 
-### on request form 
+if the testenv name contains the word **direct** or the attribute `direct = True` it will be run in direct mode if tox-direct is installed. If this is part of a project that is shared you should make sure that this also works as intended if `tox-direct` is not installed (a.k.a. degrades gracefully).
+
+### on request form
 
 `tox-direct` adds command line arguments and checks environment variables to run arbitrary envs in direct mode.
 
@@ -42,11 +43,11 @@ $ tox --help
 [...]
 
 optional arguments:
-  --direct        [tox-direct] deactivate venv, packaging and install steps - 
+  --direct        [tox-direct] deactivate venv, packaging and install steps -
                   run commands directly (can also be achieved by setting
                   TOX_DIRECT) (default: False)
   --direct-yolo   [tox-direct] do everything in host environment that would
-                  otherwise happen in an isolated virtual environment 
+                  otherwise happen in an isolated virtual environment
                   (can also be achieved by setting TOX_DIRECT_YOLO env var
                   (default: False)
 ```
@@ -65,10 +66,10 @@ $ pip list
 pip list
 Package            Version
 ------------------ -------
-[...] 
-tox                3.13.1 
-tox-direct         0.2.2  
-[...]  
+[...]
+tox                3.13.1
+tox-direct         0.2.2
+[...]
 
 
 $ tox --version
@@ -85,6 +86,15 @@ You have a project with a `tox.ini` like this:
 skipsdist = False
 
 [testenv:direct-action]
+; also the default to be explicit
+direct = True
+skip_install = False
+deps = pytest
+commands =
+    pip list
+    which python
+
+[testenv:env-attribute]
 ; also the default to be explicit
 skip_install = False
 deps = pytest
@@ -105,10 +115,17 @@ tun tox:
 $ tox -qr
 Package            Version
 ------------------ -------
-[...] 
-tox                3.13.1 
-tox-direct         0.2.2  
-[...]  
+[...]
+tox                3.13.1
+tox-direct         0.2.2
+[...]
+/home/ob/.virtualenvs/tmp/bin/python
+Package            Version
+------------------ -------
+[...]
+tox                3.13.1
+tox-direct         0.2.2
+[...]
 /home/ob/.virtualenvs/tmp/bin/python
 Package            Version
 ------------------ -------
@@ -126,21 +143,21 @@ _________________ summary _______________________
 The `direct-action` env shows the packages from the `tmp` virtual env and pytest was not installed, the project itself was also not installed.
 
 **WARNING: if something is installed in the commands (e.g. contains `pip install` calls) this will still happen as commands will be executed without further inspection.**
- 
+
 tox still creates an envdir at `.tox/direct-action` but it does not contain a virutal environment - it is only used for internal bookkeeping and logging. The interpreter used throughout is `~/.virtualenvs/tmp` - the host interpreter that tox was started from.
 
-The `normal` env ran in the isolated environment provided by tox. pytest was installed and so was the project itself (because no package is needed to install the project in development mode). If usedevelop was set to `False` tox would crash with a note that you can't do this in direct mode (because sdist is not built in direct mode). 
+The `normal` env ran in the isolated environment provided by tox. pytest was installed and so was the project itself (because no package is needed to install the project in development mode). If usedevelop was set to `False` tox would crash with a note that you can't do this in direct mode (because sdist is not built in direct mode).
 
 run the normal environment in direct mode:
 
 ```text
 tox -qre normal --direct
-Package            Version Location                           
+Package            Version Location
 ------------------ ------- --------
-[...]  
-tox                3.13.1  
-tox-direct         0.2.2 
-[...]   
+[...]
+tox                3.13.1
+tox-direct         0.2.2
+[...]
 /home/ob/.virtualenvs/tmp/bin/python
 ____________________ summary _______
   normal: commands succeeded
@@ -153,15 +170,15 @@ And now the YOLO version:
 
 ```text
 tox -qre normal --direct-yolo
-Package            Version    Location                           
+Package            Version    Location
 ------------------ ---------- --------
-[...]   
-example-project    1.3   
-pytest             4.6.3      
-[...]     
-tox                3.13.1     
+[...]
+example-project    1.3
+pytest             4.6.3
+[...]
+tox                3.13.1
 tox-direct         0.2.2
-[...]      
+[...]
 /home/ob/.virtualenvs/tmp/bin/python
 ______________________ summary _________________________________
   normal: commands succeeded
