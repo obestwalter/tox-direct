@@ -82,11 +82,10 @@ def tox_testenv_create(venv):
     YOLO = venv.envconfig.config.option.direct_yolo
     if not isDirectEnv and not YOLO:
         # direct run only safe for "normal" env if package not used in testenv
-        needsPackage = (
-            not venv.envconfig.skip_install
-            and not venv.envconfig.usedevelop
-        )
-        if needsPackage and not getattr(venv.envconfig.config, DIRECT.SKIPSDIST_ORIGINAL):
+        needsPackage = not venv.envconfig.skip_install and not venv.envconfig.usedevelop
+        if needsPackage and not getattr(
+            venv.envconfig.config, DIRECT.SKIPSDIST_ORIGINAL
+        ):
             raise NormalEnvNeedsPackage(
                 "[tox-direct] FATAL: tox env '{}' needs a package.\n"
                 "Do not run this env as part of a direct run or "
@@ -115,7 +114,9 @@ def is_direct_call(config):
 
 
 def has_direct_envs(envconfigs):
-    return any(is_direct_env(envname, envconfig) for envname, envconfig in envconfigs.items() )
+    return any(
+        is_direct_env(envname, envconfig) for envname, envconfig in envconfigs.items()
+    )
 
 
 def is_direct_env(envname, envconfig):

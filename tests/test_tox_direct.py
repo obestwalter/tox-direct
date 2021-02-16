@@ -11,10 +11,14 @@ try:
 except ImportError:
     from pathlib2 import Path
 
+
 class MockEnvConfigDirect:
     direct = True
+
+
 class MockEnvConfigNormal:
     direct = False
+
 
 class TestArgs:
     def test_normal(self, newconfig):
@@ -41,14 +45,14 @@ class TestArgs:
     "envconfigs, expectation",
     (
         ({}, False),
-        ({"direct":MockEnvConfigNormal}, True),
-        ({"direct":MockEnvConfigDirect}, True),
-        ({"directwhatever":MockEnvConfigNormal}, True),
-        ({"whateverdirect":MockEnvConfigNormal}, True),
-        ({"whatdirectever":MockEnvConfigNormal}, True),
-        ({"direct":MockEnvConfigNormal,"another-direct":MockEnvConfigNormal}, True),
-        ({"normal":MockEnvConfigNormal,"another-normal":MockEnvConfigNormal}, False),
-        ({"normal":MockEnvConfigNormal,"another-normal":MockEnvConfigDirect}, True),
+        ({"direct": MockEnvConfigNormal}, True),
+        ({"direct": MockEnvConfigDirect}, True),
+        ({"directwhatever": MockEnvConfigNormal}, True),
+        ({"whateverdirect": MockEnvConfigNormal}, True),
+        ({"whatdirectever": MockEnvConfigNormal}, True),
+        ({"direct": MockEnvConfigNormal, "another-direct": MockEnvConfigNormal}, True),
+        ({"normal": MockEnvConfigNormal, "another-normal": MockEnvConfigNormal}, False),
+        ({"normal": MockEnvConfigNormal, "another-normal": MockEnvConfigDirect}, True),
     ),
 )
 def test_has_direct_envs(envconfigs, expectation):
@@ -58,14 +62,15 @@ def test_has_direct_envs(envconfigs, expectation):
         with pytest.raises(expectation):
             has_direct_envs(envconfigs)
 
-@pytest.mark.parametrize("config_sub_string,expected_envname",(
-    ("[testenv:direct]", "direct"),
-    ("[testenv:normal]\ndirect = True", "normal")
-))
-def test_config(newconfig, config_sub_string,expected_envname):
+
+@pytest.mark.parametrize(
+    "config_sub_string,expected_envname",
+    (("[testenv:direct]", "direct"), ("[testenv:normal]\ndirect = True", "normal")),
+)
+def test_config(newconfig, config_sub_string, expected_envname):
     config = newconfig(
         dedent(
-        """
+            """
         [tox]
         skip_install = True
         {config_sub_string}
