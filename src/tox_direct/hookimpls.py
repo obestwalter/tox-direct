@@ -18,6 +18,14 @@ class DIRECT:
 
 @tox.hookimpl
 def tox_addoption(parser):
+    # necessary to allow the direct= directives in testenv sections
+    parser.add_testenv_attribute(
+        name="direct",
+        type="bool",
+        help="[tox-direct] deactivate venv, packaging and install steps - "
+        "run commands directly ",
+        default=False,
+    )
     parser.add_argument(
         "--direct",
         action="store_true",
@@ -49,7 +57,7 @@ def tox_configure(config):
             reporter.info("[tox-direct] won't build a package")
             config.skipsdist = True
         for name, envconfig in config.envconfigs.items():
-            if not is_direct_call(config) and not is_direct_env(name):
+            if not is_direct_call(config) and not is_direct_env(name, envconfig):
                 continue
             # TODO this could also be basepython on request (needed?)
             envconfig.get_envbindir = lambda: py.path.local(DIRECT.PYTHON.dirname)
@@ -70,7 +78,7 @@ def tox_testenv_create(venv):
     if not is_direct_run(venv.envconfig.config):
         return  # normal behaviour
     isDirectCall = is_direct_call(venv.envconfig.config)
-    isDirectEnv = is_direct_env(venv.name)
+    isDirectEnv = is_direct_env(venv.name, venv.envconfig)
     YOLO = venv.envconfig.config.option.direct_yolo
     if not isDirectEnv and not YOLO:
         # direct run only safe for "normal" env if package not used in testenv
@@ -99,19 +107,19 @@ def tox_testenv_create(venv):
 
 
 def is_direct_run(config):
-    return is_direct_call(config) or has_direct_envs(config.envlist)
+    return is_direct_call(config) or has_direct_envs(config.envconfigs)
 
 
 def is_direct_call(config):
     return config.option.direct or config.option.direct_yolo
 
 
-def has_direct_envs(envlist):
-    return any(is_direct_env(envname) for envname in envlist)
+def has_direct_envs(envconfigs):
+    return any(is_direct_env(envname, envconfig) for envname, envconfig in envconfigs.items() )
 
 
-def is_direct_env(name):
-    return DIRECT.MARKER in name
+def is_direct_env(envname, envconfig):
+    return DIRECT.MARKER in envname or envconfig.direct
 
 
 class NormalEnvNeedsPackage(Error):

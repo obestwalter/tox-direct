@@ -1,5 +1,6 @@
 import os
 import sys
+from textwrap import dedent
 
 import pytest
 from tox.config import parseconfig
@@ -10,6 +11,10 @@ try:
 except ImportError:
     from pathlib2 import Path
 
+class MockEnvConfigDirect:
+    direct = True
+class MockEnvConfigNormal:
+    direct = False
 
 class TestArgs:
     def test_normal(self, newconfig):
@@ -33,36 +38,43 @@ class TestArgs:
 
 
 @pytest.mark.parametrize(
-    "envlist, expectation",
+    "envconfigs, expectation",
     (
-        ([], False),
-        (["direct"], True),
-        (["directwhatever"], True),
-        (["whateverdirect"], True),
-        (["whatdirectever"], True),
-        (["direct", "another-direct"], True),
-        (["normal", "another-normal"], False),
+        ({}, False),
+        ({"direct":MockEnvConfigNormal}, True),
+        ({"direct":MockEnvConfigDirect}, True),
+        ({"directwhatever":MockEnvConfigNormal}, True),
+        ({"whateverdirect":MockEnvConfigNormal}, True),
+        ({"whatdirectever":MockEnvConfigNormal}, True),
+        ({"direct":MockEnvConfigNormal,"another-direct":MockEnvConfigNormal}, True),
+        ({"normal":MockEnvConfigNormal,"another-normal":MockEnvConfigNormal}, False),
+        ({"normal":MockEnvConfigNormal,"another-normal":MockEnvConfigDirect}, True),
     ),
 )
-def test_has_direct_envs(envlist, expectation):
+def test_has_direct_envs(envconfigs, expectation):
     if isinstance(expectation, bool):
-        assert has_direct_envs(envlist) == expectation
+        assert has_direct_envs(envconfigs) == expectation
     else:
         with pytest.raises(expectation):
-            has_direct_envs(envlist)
+            has_direct_envs(envconfigs)
 
-
-def test_config(newconfig):
+@pytest.mark.parametrize("config_sub_string,expected_envname",(
+    ("[testenv:direct]", "direct"),
+    ("[testenv:normal]\ndirect = True", "normal")
+))
+def test_config(newconfig, config_sub_string,expected_envname):
     config = newconfig(
+        dedent(
         """
         [tox]
         skip_install = True
-        [testenv:direct]
+        {config_sub_string}
         skip_install = True
         deps = a
         """
+        ).format(config_sub_string=config_sub_string)
     )
-    direct = config.envconfigs["direct"]
+    direct = config.envconfigs[expected_envname]
     assert direct.deps == []
     assert direct.skip_install is True
     assert direct.basepython == sys.executable
@@ -77,7 +89,7 @@ def test_does_not_interfere_with_single_normal_env(cmd, initproj):
             "tox.ini": """
                     [testenv:normal]
                     deps = decorator
-                    commands = 
+                    commands =
                         pip list
                         python -c 'import sys; print(sys.executable);'
             """
@@ -104,13 +116,13 @@ def test_mixed_run_crashes_when_normal_env_needs_package(cmd, initproj):
             "tox.ini": """
                     [testenv:direct]
                     deps = decorator
-                    commands = 
+                    commands =
                         pip list
                         python -c 'import sys; print(sys.executable);'
 
                     [testenv:normal]
                     deps = decorator
-                    commands = 
+                    commands =
                         pip list
                         python -c 'import sys; print(sys.executable);'
             """
@@ -129,14 +141,14 @@ def test_mixed_run_does_not_crash_when_normal_env_needs_no_package(cmd, initproj
             "tox.ini": """
                     [testenv:direct]
                     deps = decorator
-                    commands = 
+                    commands =
                         pip list
                         python -c 'import sys; print(sys.executable);'
 
                     [testenv:normal]
                     usedevelop = True
                     deps = decorator
-                    commands = 
+                    commands =
                         pip list
                         python -c 'import sys; print(sys.executable);'
             """
@@ -177,10 +189,10 @@ def test_direct_yolo_normal_vertical(cmd, initproj):
             "tox.ini": """
                     [testenv:normal]
                     deps = decorator
-                    commands = 
+                    commands =
                         pip list
                         python -c 'import sys; print(sys.executable);'
-                        
+
             """
         },
     )
