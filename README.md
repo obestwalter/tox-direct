@@ -1,4 +1,4 @@
-[![GitLabl Build Status](https://gitlab.com/obestwalter/tox-direct/badges/master/build.svg)](https://gitlab.com/obestwalter/tox-direct/commits/master)
+![Tests](https://github.com/obestwalter/tox-direct/workflows/Tests/badge.svg)
 
 # tox-direct
 
