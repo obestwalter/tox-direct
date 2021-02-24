@@ -5,14 +5,12 @@ import sys
 import py
 import tox
 from tox.session import reporter
-from tox.exception import Error
 
 
 class DIRECT:
     MARKER = "direct"
     ENV_VAR = "TOX_DIRECT"
     ENV_VAR_YOLO = "TOX_DIRECT_YOLO"
-    SKIPSDIST_ORIGINAL = "_TOX_DIRECT_SKIPSDIST_ORIGINAL"
     PYTHON = py.path.local(sys.executable)
 
 
@@ -44,83 +42,111 @@ def tox_addoption(parser):
 
 @tox.hookimpl
 def tox_configure(config):
-    if DIRECT.ENV_VAR in os.environ:
-        config.option.direct = True
-    if DIRECT.ENV_VAR_YOLO in os.environ:
-        config.option.direct_yolo = True
-    YOLO = config.option.direct_yolo
-    if is_direct_run(config):
-        if YOLO:
-            reporter.info("YOLO! Do everything in the host environment.")
-        setattr(config, DIRECT.SKIPSDIST_ORIGINAL, config.skipsdist)
-        if not config.skipsdist and not YOLO:
-            reporter.info("[tox-direct] won't build a package")
-            config.skipsdist = True
-        for name, envconfig in config.envconfigs.items():
-            if not is_direct_call(config) and not is_direct_env(name, envconfig):
-                continue
+    populate_option_from_env(config.option)
+    if not is_direct_run(config.option, config.envlist, config.envconfigs):
+        return  # normal behaviour
+
+    yolo = config.option.direct_yolo
+    if yolo:
+        reporter.info("YOLO! Do everything in the host environment.")
+
+    if safe_to_skipsdist(config.envlist, config.envconfigs):
+        if not config.skipsdist:
+            reporter.info("[tox-direct] safe to skip sdist - no env needs a package")
+        config.skipsdist = True
+
+    for envconfig in config.envconfigs.values():
+        if is_direct_call(config) or is_direct_env(envconfig):
             # TODO this could also be basepython on request (needed?)
             envconfig.get_envbindir = lambda: py.path.local(DIRECT.PYTHON.dirname)
             envconfig.get_envpython = lambda: py.path.local(DIRECT.PYTHON)
             assert envconfig.envpython == DIRECT.PYTHON, envconfig.envpython
-            if envconfig.deps and not YOLO:
-                reporter.info(
-                    "[tox-direct] won't install dependencies in '{}'".format(name)
-                )
+            if envconfig.deps and not yolo:
                 envconfig.deps = []
-            if not envconfig.skip_install and not YOLO:
+                reporter.info(
+                    "[tox-direct] won't install dependencies in '{}'".format(
+                        envconfig.name
+                    )
+                )
+            if not envconfig.skip_install and not yolo:
                 envconfig.skip_install = True
-                reporter.info("[tox-direct] won't install project in {}".format(name))
+                reporter.info(
+                    "[tox-direct] won't install project in {}".format(envconfig.name)
+                )
 
 
 @tox.hookimpl
 def tox_testenv_create(venv):
-    if not is_direct_run(venv.envconfig.config):
-        return  # normal behaviour
-    isDirectCall = is_direct_call(venv.envconfig.config)
-    isDirectEnv = is_direct_env(venv.name, venv.envconfig)
-    YOLO = venv.envconfig.config.option.direct_yolo
-    if not isDirectEnv and not YOLO:
-        # direct run only safe for "normal" env if package not used in testenv
-        needsPackage = (
-            not venv.envconfig.skip_install
-            and not venv.envconfig.usedevelop
-        )
-        if needsPackage and not getattr(venv.envconfig.config, DIRECT.SKIPSDIST_ORIGINAL):
-            raise NormalEnvNeedsPackage(
-                "[tox-direct] FATAL: tox env '{}' needs a package.\n"
-                "Do not run this env as part of a direct run or "
-                "run everything in the host (including package build) by running "
-                "with --direct-yolo flag.\n"
-                "WARNING: this will change the host environment.".format(venv.name)
-            )
+    envconfig = venv.envconfig  # configuration for this venv
+    option = envconfig.config.option  # command line options
+    envlist = envconfig.config.envlist  # names of all used envs in this testrun
 
-    if isDirectCall or isDirectEnv:
+    if not is_direct_run(option, envlist, envconfig.config.envconfigs):
+        return  # normal behaviour
+
+    if is_direct_call(option) or is_direct_env(envconfig):
         venv.is_allowed_external = lambda _: True  # everything goes!
         reporter.info(
             "[tox-direct] creating no virtual environment - use:"
-            " {}".format(venv.envconfig.envpython)
+            " {}".format(envconfig.envpython)
         )
-        if not YOLO:
+        if not option.direct_yolo:
             return True
+
         reporter.info("[tox-direct] YOLO!1!!")
 
 
-def is_direct_run(config):
-    return is_direct_call(config) or has_direct_envs(config.envconfigs)
+def populate_option_from_env(option):
+    """If someone requested via anv: adjust command line option accordingly."""
+    option.direct = True if os.getenv(DIRECT.ENV_VAR) else False
+    option.direct_yolo = True if os.getenv(DIRECT.ENV_VAR_YOLO) else False
 
 
-def is_direct_call(config):
-    return config.option.direct or config.option.direct_yolo
+def is_direct_run(option, envlist, envconfigs):
+    """It's a direct run if requested or one of the env is a direct env."""
+    return is_direct_call(option) or has_direct_envs(envlist, envconfigs)
 
 
-def has_direct_envs(envconfigs):
-    return any(is_direct_env(envname, envconfig) for envname, envconfig in envconfigs.items() )
+def is_direct_call(option):
+    """It's a direct call, if one of the direct options is set."""
+    return option.direct or option.direct_yolo
 
 
-def is_direct_env(envname, envconfig):
-    return DIRECT.MARKER in envname or envconfig.direct
+def has_direct_envs(envlist, envconfigs):
+    """Has direct envs if any of the envs in this testrun are direct."""
+    for envconfig in get_this_runs_envconfigs(envlist, envconfigs):
+        if is_direct_env(envconfig):
+            return True
+
+        return False
 
 
-class NormalEnvNeedsPackage(Error):
-    """Raised when a direct run contains a normal env needing a package."""
+def is_direct_env(envconfig):
+    """It's a direct env if requested via env name or testenv attribute."""
+    return DIRECT.MARKER in envconfig.envname or envconfig.direct
+
+
+def safe_to_skipsdist(envlist, envconfigs):
+    """If none of the envs in this run need a package: return True."""
+    for envconfig in get_this_runs_envconfigs(envlist, envconfigs):
+        if envconfig.direct:
+            continue  # skip_install will be overridden to True
+
+        if envconfig.skip_install:
+            continue  # package never needed - will not be installed
+
+        # package needed if installation is not develop install
+        if not envconfig.usedevelop:
+            return False
+
+    return True
+
+
+def get_this_runs_envconfigs(envlist, envconfigs):
+    """Filter configs that are requested in this testrun."""
+    filtered_envconfigs = []
+    for envname in envlist:
+        envconfig = envconfigs.get(envname)
+        if envconfig:
+            filtered_envconfigs.append(envconfig)
+    return filtered_envconfigs
