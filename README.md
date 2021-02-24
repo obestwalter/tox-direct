@@ -30,6 +30,7 @@ There are two ways to request envs being run in direct mode: **static** and **on
 
 ### static form 
 if the testenv name contains the word **direct** it will be run in direct mode if tox-direct is installed. If this is part of a project that is shared you should make sure that this also works as intended if `tox-direct` is not installed (a.k.a. degrades gracefully).
+if the testenv name contains the word **direct** or the attribute `direct = True` it will be run in direct mode if tox-direct is installed. If this is part of a project that is shared you should make sure that this also works as intended if `tox-direct` is not installed (a.k.a. degrades gracefully).
 
 ### on request form 
 
@@ -92,6 +93,15 @@ commands =
     pip list
     which python
 
+[testenv:env-attribute]
+direct = True
+; also the default to be explicit
+skip_install = False
+deps = pytest
+commands =
+    pip list
+    which python
+
 [testenv:normal]
 whitelist_externals = which
 skip_install = False
@@ -109,6 +119,13 @@ Package            Version
 tox                3.13.1 
 tox-direct         0.2.2  
 [...]  
+/home/ob/.virtualenvs/tmp/bin/python
+Package            Version
+------------------ -------
+[...]
+tox                3.13.1
+tox-direct         0.2.2
+[...]
 /home/ob/.virtualenvs/tmp/bin/python
 Package            Version
 ------------------ -------
