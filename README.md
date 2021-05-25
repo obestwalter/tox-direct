@@ -16,7 +16,7 @@ Having said that: life is messy and sometimes you just want to run a certain env
 
 ## concept
 
-`tox-direct` is trying to be safe first and should also have the ability to degrade gracefully when `tox-direct` is not installed. To ensure this, no new key in `tox.ini` is introduced. It works purely over env name, command line parameters or environment variables.
+`tox-direct` is trying to be safe first and should also have the ability to degrade gracefully when `tox-direct` is not installed. To request that an environment is run directly it can be requested via command line argument, environment or setting `direct = True` in a testenv.
 
 To be safe the following activities will be deactivated by default in direct runs:
 
