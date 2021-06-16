@@ -56,7 +56,7 @@ def tox_configure(config):
         config.skipsdist = True
 
     for envconfig in config.envconfigs.values():
-        if is_direct_call(config) or is_direct_env(envconfig):
+        if is_direct_call(config.option) or is_direct_env(envconfig):
             # TODO this could also be basepython on request (needed?)
             envconfig.get_envbindir = lambda: py.path.local(DIRECT.PYTHON.dirname)
             envconfig.get_envpython = lambda: py.path.local(DIRECT.PYTHON)
@@ -65,13 +65,13 @@ def tox_configure(config):
                 envconfig.deps = []
                 reporter.info(
                     "[tox-direct] won't install dependencies in '{}'".format(
-                        envconfig.name
+                        envconfig.envname
                     )
                 )
             if not envconfig.skip_install and not yolo:
                 envconfig.skip_install = True
                 reporter.info(
-                    "[tox-direct] won't install project in {}".format(envconfig.name)
+                    "[tox-direct] won't install project in {}".format(envconfig.envname)
                 )
 
 
@@ -98,8 +98,8 @@ def tox_testenv_create(venv):
 
 def populate_option_from_env(option):
     """If someone requested via anv: adjust command line option accordingly."""
-    option.direct = True if os.getenv(DIRECT.ENV_VAR) else False
-    option.direct_yolo = True if os.getenv(DIRECT.ENV_VAR_YOLO) else False
+    option.direct = True if os.getenv(DIRECT.ENV_VAR) or option.direct else False
+    option.direct_yolo = True if os.getenv(DIRECT.ENV_VAR_YOLO) or option.direct_yolo else False
 
 
 def is_direct_run(option, envlist, envconfigs):
@@ -118,7 +118,7 @@ def has_direct_envs(envlist, envconfigs):
         if is_direct_env(envconfig):
             return True
 
-        return False
+    return False
 
 
 def is_direct_env(envconfig):
