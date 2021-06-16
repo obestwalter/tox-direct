@@ -80,7 +80,7 @@ class TestArgs:
                 "direct": MockEnvConfigNormal("direct"),
                 "another-direct": MockEnvConfigNormal("another-direct")},
             True
-            ),
+        ),
         (
             ["normal", "another-normal"],
             {
@@ -96,6 +96,14 @@ class TestArgs:
                 "another-normal": MockEnvConfigDirect("another-normal")
             },
             True
+        ),
+        (
+            ["normal"],
+            {
+                "direct": MockEnvConfigDirect("direct"),
+                "normal": MockEnvConfigNormal("normal"),
+            },
+            False
         ),
     ),
 )
