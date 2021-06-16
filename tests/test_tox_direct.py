@@ -156,7 +156,7 @@ def test_does_not_interfere_with_single_normal_env(cmd, initproj):
     assert sys.executable not in r.out
 
 
-def test_mixed_config_does_not_crash_when_only_normal_env_is_requested(cmd, initproj):
+def test_mixed_config_when_only_normal_env_is_requested(cmd, initproj):
     projectName = "example_project-1.3"
     initproj(
         projectName,
@@ -181,7 +181,7 @@ def test_mixed_config_does_not_crash_when_only_normal_env_is_requested(cmd, init
     assert "example-project 1.3" in r.out
 
 
-def test_mixed_run_does_not_crash_when_normal_env_needs_no_package(cmd, initproj):
+def test_mixed_run_when_normal_env_needs_no_package(cmd, initproj):
     projectName = "example_project-1.3"
     initproj(
         projectName,

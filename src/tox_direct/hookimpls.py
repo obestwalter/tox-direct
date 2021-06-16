@@ -98,8 +98,8 @@ def tox_testenv_create(venv):
 
 def populate_option_from_env(option):
     """If someone requested via anv: adjust command line option accordingly."""
-    option.direct = True if os.getenv(DIRECT.ENV_VAR) or option.direct else False
-    option.direct_yolo = True if os.getenv(DIRECT.ENV_VAR_YOLO) or option.direct_yolo else False
+    option.direct = os.getenv(DIRECT.ENV_VAR, False) or option.direct
+    option.direct_yolo = os.getenv(DIRECT.ENV_VAR_YOLO, False) or option.direct_yolo
 
 
 def is_direct_run(option, envlist, envconfigs):
@@ -114,11 +114,10 @@ def is_direct_call(option):
 
 def has_direct_envs(envlist, envconfigs):
     """Has direct envs if any of the envs in this testrun are direct."""
-    for envconfig in get_this_runs_envconfigs(envlist, envconfigs):
-        if is_direct_env(envconfig):
-            return True
-
-    return False
+    return any(
+        is_direct_env(envconfig)
+        for envconfig in get_this_runs_envconfigs(envlist, envconfigs)
+    )
 
 
 def is_direct_env(envconfig):
