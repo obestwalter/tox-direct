@@ -12,12 +12,24 @@ except ImportError:
     from pathlib2 import Path
 
 
-class MockEnvConfigDirect:
+class MockEnvConfig:
+    def __init__(self, envname):
+        self.envname = envname
+
+
+class MockEnvConfigDirect(MockEnvConfig):
     direct = True
+    direct_yolo = False
 
 
-class MockEnvConfigNormal:
+class MockEnvConfigYolo(MockEnvConfig):
     direct = False
+    direct_yolo = True
+
+
+class MockEnvConfigNormal(MockEnvConfig):
+    direct = False
+    direct_yolo = False
 
 
 class TestArgs:
@@ -42,25 +54,65 @@ class TestArgs:
 
 
 @pytest.mark.parametrize(
-    "envconfigs, expectation",
+    "envlist, envconfigs, expectation",
     (
-        ({}, False),
-        ({"direct":MockEnvConfigNormal}, True),
-        ({"direct":MockEnvConfigDirect}, True),
-        ({"directwhatever":MockEnvConfigNormal}, True),
-        ({"whateverdirect":MockEnvConfigNormal}, True),
-        ({"whatdirectever":MockEnvConfigNormal}, True),
-        ({"direct":MockEnvConfigNormal,"another-direct":MockEnvConfigNormal}, True),
-        ({"normal":MockEnvConfigNormal,"another-normal":MockEnvConfigNormal}, False),
-        ({"normal":MockEnvConfigNormal,"another-normal":MockEnvConfigDirect}, True),
+        ([],{}, False),
+        (["direct"], {"direct": MockEnvConfigNormal("direct")}, True),
+        (["direct"], {"direct": MockEnvConfigDirect("direct")}, True),
+        (
+            ["directwhatever"],
+            {"directwhatever": MockEnvConfigNormal("directwhatever")},
+            True
+        ),
+        (
+            ["whateverdirect"],
+            {"whateverdirect": MockEnvConfigNormal("whateverdirect")},
+            True
+        ),
+        (
+            ["whatdirectever"],
+            {"whatdirectever": MockEnvConfigNormal("whatdirectever")},
+            True
+        ),
+        (
+            ["direct", "another-direct"],
+            {
+                "direct": MockEnvConfigNormal("direct"),
+                "another-direct": MockEnvConfigNormal("another-direct")},
+            True
+        ),
+        (
+            ["normal", "another-normal"],
+            {
+                "normal": MockEnvConfigNormal("normal"),
+                "another-normal": MockEnvConfigNormal("another-normal")
+            },
+            False
+        ),
+        (
+            ["normal", "another-normal"],
+            {
+                "normal": MockEnvConfigNormal("normal"),
+                "another-normal": MockEnvConfigDirect("another-normal")
+            },
+            True
+        ),
+        (
+            ["normal"],
+            {
+                "direct": MockEnvConfigDirect("direct"),
+                "normal": MockEnvConfigNormal("normal"),
+            },
+            False
+        ),
     ),
 )
-def test_has_direct_envs(envconfigs, expectation):
+def test_has_direct_envs(envlist, envconfigs, expectation):
     if isinstance(expectation, bool):
-        assert has_direct_envs(envconfigs) == expectation
+        assert has_direct_envs(envlist, envconfigs) == expectation
     else:
         with pytest.raises(expectation):
-            has_direct_envs(envconfigs)
+            has_direct_envs(envlist, envconfigs)
 
 @pytest.mark.parametrize("config_sub_string,expected_envname",(
     ("[testenv:direct]", "direct"),
@@ -93,7 +145,7 @@ def test_does_not_interfere_with_single_normal_env(cmd, initproj):
             "tox.ini": """
                     [testenv:normal]
                     deps = decorator
-                    commands = 
+                    commands =
                         pip list
                         python -c 'import sys; print(sys.executable);'
             """
@@ -112,7 +164,7 @@ def test_does_not_interfere_with_single_normal_env(cmd, initproj):
     assert sys.executable not in r.out
 
 
-def test_mixed_run_crashes_when_normal_env_needs_package(cmd, initproj):
+def test_mixed_config(cmd, initproj):
     projectName = "example_project-1.3"
     initproj(
         projectName,
@@ -120,24 +172,25 @@ def test_mixed_run_crashes_when_normal_env_needs_package(cmd, initproj):
             "tox.ini": """
                     [testenv:direct]
                     deps = decorator
-                    commands = 
+                    commands =
                         pip list
                         python -c 'import sys; print(sys.executable);'
 
                     [testenv:normal]
                     deps = decorator
-                    commands = 
+                    commands =
                         pip list
                         python -c 'import sys; print(sys.executable);'
             """
         },
     )
     r = cmd()
-    assert r.ret == 1
-    assert "[tox-direct] FATAL: tox env 'normal' needs a package" in r.err
+    assert r.ret == 0
+    assert "tox-direct" in r.out
+    assert "example-project 1.3" in r.out
 
 
-def test_mixed_run_does_not_crash_when_normal_env_needs_no_package(cmd, initproj):
+def test_mixed_config_when_only_normal_env_is_requested(cmd, initproj):
     projectName = "example_project-1.3"
     initproj(
         projectName,
@@ -145,14 +198,39 @@ def test_mixed_run_does_not_crash_when_normal_env_needs_no_package(cmd, initproj
             "tox.ini": """
                     [testenv:direct]
                     deps = decorator
-                    commands = 
+                    commands =
+                        pip list
+                        python -c 'import sys; print(sys.executable);'
+
+                    [testenv:normal]
+                    deps = decorator
+                    commands =
+                        pip list
+                        python -c 'import sys; print(sys.executable);'
+            """
+        },
+    )
+    r = cmd("tox", "-e", "normal")
+    assert r.ret == 0
+    assert "example-project 1.3" in r.out
+
+
+def test_mixed_run_when_normal_env_needs_no_package(cmd, initproj):
+    projectName = "example_project-1.3"
+    initproj(
+        projectName,
+        filedefs={
+            "tox.ini": """
+                    [testenv:direct]
+                    deps = decorator
+                    commands =
                         pip list
                         python -c 'import sys; print(sys.executable);'
 
                     [testenv:normal]
                     usedevelop = True
                     deps = decorator
-                    commands = 
+                    commands =
                         pip list
                         python -c 'import sys; print(sys.executable);'
             """
@@ -178,7 +256,7 @@ def test_direct_vertical(cmd, initproj):
     assert r.ret == 0
     assert not r.session.config.option.direct
     assert not r.session.config.option.direct_yolo
-    assert "won't build a package" in r.out
+    assert "won't build a package" not in r.out
     assert "won't install dependencies" in r.out
     assert "won't install project" in r.out
     assert "creating no virtual environment" in r.out
@@ -193,10 +271,10 @@ def test_direct_yolo_normal_vertical(cmd, initproj):
             "tox.ini": """
                     [testenv:normal]
                     deps = decorator
-                    commands = 
+                    commands =
                         pip list
                         python -c 'import sys; print(sys.executable);'
-                        
+
             """
         },
     )
