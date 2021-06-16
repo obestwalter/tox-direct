@@ -164,6 +164,32 @@ def test_does_not_interfere_with_single_normal_env(cmd, initproj):
     assert sys.executable not in r.out
 
 
+def test_mixed_config(cmd, initproj):
+    projectName = "example_project-1.3"
+    initproj(
+        projectName,
+        filedefs={
+            "tox.ini": """
+                    [testenv:direct]
+                    deps = decorator
+                    commands =
+                        pip list
+                        python -c 'import sys; print(sys.executable);'
+
+                    [testenv:normal]
+                    deps = decorator
+                    commands =
+                        pip list
+                        python -c 'import sys; print(sys.executable);'
+            """
+        },
+    )
+    r = cmd()
+    assert r.ret == 0
+    assert "tox-direct" in r.out
+    assert "example-project 1.3" in r.out
+
+
 def test_mixed_config_when_only_normal_env_is_requested(cmd, initproj):
     projectName = "example_project-1.3"
     initproj(
